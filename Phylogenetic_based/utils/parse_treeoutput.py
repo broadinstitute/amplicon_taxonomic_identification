@@ -5,7 +5,7 @@ import dendropy as dp
 import argparse
 
 
-debug=True
+debug=False
 
 if __name__ == '__main__':
 	#Create the argparser
@@ -43,10 +43,10 @@ if __name__ == '__main__':
 		#Skip self
 		if i.label==name_asv:
 			continue
-		
+
 		new_taxon=i
 		new_distance=pdc.distance(tree_dendro.taxon_namespace.get_taxon(name_asv),i)
-		
+
 		if new_distance < closest_distance:
 			closest_leaf=new_taxon
 			closest_distance=new_distance
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	if debug:
 		print(closest_leaf, closest_distance)
 
-	#Check if the parent node shares the condition of SH>90. 
+	#Check if the parent node shares the condition of SH>90.
 	closest_leaf_phylo=closest_leaf.label.replace(' ', '_')
 	if debug:
 		print(file_output_name, closest_leaf_phylo)
@@ -77,26 +77,26 @@ if __name__ == '__main__':
 	no_mcra=False
 
 	while sh_metric_clade<sh_cutoff:
-		
+
 		new_parent=parents[subclade]
-		
+
 		#Check that we hit the root of the tree
 		if not new_parent.comment:
 			print('Reached the root')
 			warnings.append('Could not find subclade with SH value above '+str(sh_cutoff)+' in all the subclades the ASV is a member off.')
 			no_mcra=True
 			break
-			
-		
+
+
 		sh_metric_clade=int(new_parent.comment)
 		subclade=new_parent
 		no_mcra=False
-		
-		if debug: 
+
+		if debug:
 			print(new_parent.branch_length)
 			print(sh_metric_clade)
 
-	# Write an output file	   
+	# Write an output file
 	with open(file_output_name+'-TreeAssignmentResults.txt', 'w') as f:
 		f.write(file_output_name+' Tree Assignment Results\n')
 		f.write('WARNINGS:\n')
@@ -116,19 +116,7 @@ if __name__ == '__main__':
 		f.write('MCRA with SH metric above '+str(sh_cutoff)+'\n')
 		if no_mcra:
 			f.write('Could not find clade with SH below cuttoff.\n')
-		else: 
+		else:
 			names=[i.name for i in subclade.get_terminals()]
 			f.write(','.join(names)+'\n')
 			f.write('SH Metric:'+subclade.comment+'\n')
-
-
-
-
-
-
-
-
-
-
-
-
