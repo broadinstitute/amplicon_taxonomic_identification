@@ -18,14 +18,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
-    #database="/Users/amartine/Documents/Broad/Malaria/DataBase_Construction/COX1/Tree_Db/AllCOX1_Cut_ForTree_ReducedNumbers_Alignment.fasta"
-    #output_dada2="/Users/amartine/Documents/Broad/Malaria/DADA2_Runs/SecondBatch/11_6_1_Aug26_SecondBatch.fasta"
-    #output_dada2="/Users/amartine/Documents/Broad/Malaria/DADA2_Runs/SecondBatch/COI_11_4_1_Aug26_SecondBatch.fasta"
-    #record_of_interest=1 #This is the position of the record of intererest, idealy the first one, but you could test other ones.
-    #name="COI_11_4_1" #Provide a name for the output and the record. Default is False
-
-
     database=args.database
     output_dada2=args.sequence
     record_of_interest=args.NumOfInterest
@@ -41,7 +33,7 @@ if __name__ == '__main__':
     all_db = list(SeqIO.parse(database, "fasta"))
     dada2_output=list(SeqIO.parse(output_dada2, "fasta"))
 
-    #Add check that if number of record too high, code fails. 
+    #Add check that if number of record too high, code fails.
 
     #Select the record
     dada_record=dada2_output[record_of_interest-1]
