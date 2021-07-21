@@ -39,7 +39,7 @@ Where:
 * -o:  Prefix to append to all output files.
 
 
-Notes
+### Notes
 
 An example run is stored in the folder: /gsap/garage-protistvector/vector_ampseq/TreeAssignment/TreeAssignment_Pipeline/TestBatchRun
 
