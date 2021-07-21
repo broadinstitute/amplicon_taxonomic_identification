@@ -9,7 +9,7 @@ All of the scripts required to run the tree pipeline are located in the followin
 ```
 usage: create_taskarrayinput.py [-h] -m METADATA -a AMPLICON [-o OUTPUT]
 ```
-where:
+Where:
 * -m metadata: Path to the metadata file. Consists of a tsv with 3 columns and no header: sample_id, path_to_dada2_fasta, path_to_BLAST_output. The blast output is the file that ends as ‘_Summary_Stats.txt’.
 * -a amplicon: Name of the amplicon of interest as it appears in the BLAST database (ex. COX1, ITS2).
 * -o: Prefix to append to all output files.
@@ -17,9 +17,9 @@ where:
 
 1. Run task array that executes the main tree pipeline on all samples using the “treebased_batch.sh” script:
 ```
-    N=(Number of samples in the metadata file)
+N=(Number of samples in the metadata file)
 
-    qsub -t 1-$N -cwd ./treebased_batch.sh Path_to_array_Metadata.txt path_to_Tree_FASTA_db.fasta outgroup SH_Cutoff
+qsub -t 1-$N -cwd ./treebased_batch.sh Path_to_array_Metadata.txt path_to_Tree_FASTA_db.fasta outgroup SH_Cutoff
 ```
 The script takes 4 positional arguments:
 - Path_to_array_Metadata.txt: TSV metadata file with 3 columns and no header: sample_id, path_to_dada2_fasta, position (1-indexed, first record is number 1) of the FASTA record in the file to use in the tree.
@@ -31,9 +31,9 @@ The script takes 4 positional arguments:
 
 2. Run the “aggregate_tree_output.py” script to create an aggregated output table:
 ```
-    usage: aggregate_tree_output.py [-h] -m METADATA -d DIRECTORY [-o OUTPUT]
+usage: aggregate_tree_output.py [-h] -m METADATA -d DIRECTORY [-o OUTPUT]
 ```
-Where
+Where:
 * -m: Path to the metadata file used for the task array
 * -d: Path to the folder where all the output files from the task array in step 1 are stored.
 * -o:  Prefix to append to all output files.
