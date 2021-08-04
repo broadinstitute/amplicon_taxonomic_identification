@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 #Script that implements the BLAST based assignmnet Pipeline
 #USAGE#
-#Fill
-#
-#
+#Before using, make sure your system has BLAST installed. In the server, use ".ncbi-blast-2.9.0+"
 
 #PACKAGES#
 
@@ -173,13 +171,33 @@ class QuerySequencePair:
 if __name__ == '__main__':
 
     #NEED A PARSER#
-    input_file='/Users/amartine/Documents/Broad/Malaria/DADA2_Runs/FourthBatchMeg_May_Server/FourthBatchMeg_server_dada2Fastas.txt'
-    output_path='/Users/amartine/Documents/Broad/Malaria/DADA2_Runs/FourthBatchMeg_May_Server/'
-    batch_name='FourthBatchMeg_May_Server'
+    #input_file='/Users/amartine/Documents/Broad/Malaria/DADA2_Runs/FourthBatchMeg_May_Server/FourthBatchMeg_server_dada2Fastas.txt'
+    #output_path='/Users/amartine/Documents/Broad/Malaria/DADA2_Runs/FourthBatchMeg_May_Server/'
+    #batch_name='FourthBatchMeg_May_Server'
+    #blast_database=''
 
 
-    notmerged=True #Chenge to TRUE if the reads were NOT merged
-    amplicon_input='ITS2,COX1'
+    #notmerged=True #Chenge to TRUE if the reads were NOT merged
+    #amplicon_input='ITS2,COX1'
+
+    #Create the argparser
+    parser=argparse.ArgumentParser()
+    parser.add_argument("-d","--database", required=True, help="Path to the BLAST species reference database")
+    parser.add_argument("-i","--input_file", required=True, help="Path to input metadata file. The file is a tsv with 2 columns, where first colum is the sample id and the second the path to the dada2 fasta for that sample. ")
+    parser.add_argument("-o","--output_path", required=True, help="Path to folder where all output should be stored. Should end with a /")
+    parser.add_argument("-a","--amplicons", required=True, help="Comma-separated list of names of all the amplicons to analyze. Names as they appear on the BLAST database provided.")
+    parser.add_argument("-n","--OutName", help="Output name for summary files", type=str, default='out_BLAST')
+    parser.add_argument("-m","--merged", help="Use the flag only if the reads are merged. By default, it assumes reads are not merged.", action='store_false')
+
+    args = parser.parse_args()
+
+    blast_database=args.database
+    input_file=args.input_file
+    output_path=args.output_path
+    batch_name=args.OutName
+    amplicon_input=args.amplicons
+    notmerged=args.merged
+
 
     #Run BLAST
     input_samples={}
@@ -192,9 +210,9 @@ if __name__ == '__main__':
             input_samples[sample_name]=sample_file
 
             #Run the required BLAST Command
-            blast_command=make_blast_command(sample_file)
+            blast_command=make_blast_command(sample_file,blast_database)
             print(blast_command)
-            subprocess.call(blast_command, shell=True, executable='/bin/zsh') #Remove the "executable=/bin/zsh" line if you want the bash shell
+            subprocess.call(blast_command, shell=True) #Add "executable=/bin/zsh" line if you want the zsh shell. Bash by default.
 
             #Save the fasta files as well
             name_fasta=sample_file.split('.')[0]
