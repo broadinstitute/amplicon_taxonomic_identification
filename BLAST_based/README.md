@@ -42,6 +42,7 @@ An example command is as follows:
 In the server, the script is located at: `/gsap/garage-protistvector/vector_ampseq/BLASTAssignment/BLASTPipeline`
 As well as, database file are located at: `/gsap/garage-protistvector/vector_ampseq/BLASTAssignment/BLASTDatabases`
 
+Before using the pipeline on the server, make sure to activate the BLAST dotkit (`use .ncbi-blast-2.9.0+`) as well as the corresponding conda enviroment (`conda activate /gsap/garage-protistvector/vector_ampseq/BLASTAssignment/envs`)
 
 ### Creating BLAST pipelines:
 The pipeline expect the format of the FASTA record ID's used to generate the BLAST database to be the following:
@@ -49,7 +50,7 @@ The pipeline expect the format of the FASTA record ID's used to generate the BLA
 >{Amplicon_ID}|GeneralID|Species_Name
 NNNNNNNNNNNNN
 ```
-where Amplicon_ID matches the IDs provided in the -a option of the pipeline. 
+where Amplicon_ID matches the IDs provided in the -a option of the pipeline.
 
 
 ### Notes:
