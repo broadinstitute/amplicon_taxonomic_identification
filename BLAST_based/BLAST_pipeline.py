@@ -14,6 +14,10 @@ from Bio.SeqRecord import SeqRecord
 import intervaltree
 import argparse
 
+DEBUG=True
+
+DEBUG_QUERY=False
+
 #FUNCTION and CLASS DECLARATIONS#
 
 def make_blast_command(fasta_input, db_path, max_target_seq=150):
@@ -184,7 +188,7 @@ if __name__ == '__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument("-d","--database", required=True, help="Path to the BLAST species reference database")
     parser.add_argument("-i","--input_file", required=True, help="Path to input metadata file. The file is a tsv with 2 columns, where first colum is the sample id and the second the path to the dada2 fasta for that sample. ")
-    parser.add_argument("-o","--output_path", required=True, help="Path to folder where all output should be stored. Should end with a /")
+    parser.add_argument("-o","--output_path", required=True, help="Path to folder where all output should be stored.")
     parser.add_argument("-a","--amplicons", required=True, help="Comma-separated list of names of all the amplicons to analyze. Names as they appear on the BLAST database provided.")
     parser.add_argument("-n","--OutName", help="Output name for summary files", type=str, default='out_BLAST')
     parser.add_argument("-m","--merged", help="Use the flag only if the reads are merged. By default, it assumes reads are not merged.", action='store_false')
@@ -193,11 +197,13 @@ if __name__ == '__main__':
 
     blast_database=args.database
     input_file=args.input_file
-    output_path=args.output_path
+    output_path=args.output_path +'/'
     batch_name=args.OutName
     amplicon_input=args.amplicons
     notmerged=args.merged
 
+    if DEBUG:
+        print(args)
 
     #Run BLAST
     input_samples={}
@@ -211,7 +217,8 @@ if __name__ == '__main__':
 
             #Run the required BLAST Command
             blast_command=make_blast_command(sample_file,blast_database)
-            print(blast_command)
+            if DEBUG:
+                print(blast_command)
             subprocess.call(blast_command, shell=True) #Add "executable=/bin/zsh" line if you want the zsh shell. Bash by default.
 
             #Save the fasta files as well
@@ -224,7 +231,8 @@ if __name__ == '__main__':
     warnings=[]
 
     for sample_id in input_samples:
-        print(sample_id)
+        if DEBUG:
+            print(sample_id)
 
         #Specify the inputs
         query_file=input_samples[sample_id]
@@ -244,14 +252,17 @@ if __name__ == '__main__':
         total_reads=0
 
         for record in SeqIO.parse(query_file, "fasta"):
-            print(record.id)
+            if DEBUG_QUERY:
+                print(record.id)
             query_sequences[record.id]=record
             spl=record.description.split('Reads-')
             try:
-                print('Read support:'+spl[1])
+                if DEBUG_QUERY:
+                    print('Read support:'+spl[1])
                 read_support=int(spl[1])
             except:
-                print('No read support found')
+                if DEBUG_QUERY:
+                    print('No read support found')
                 read_support=0
             total_reads=total_reads+read_support
             query_data[record.id]=QueryData(record.id, str(record.seq), num_reads=read_support, notmerged=notmerged)
@@ -318,7 +329,8 @@ if __name__ == '__main__':
         #All of the alignments are parsed, now get the top number of matches by query.
         for query_id in query_data:
             dict_matches={}
-            print(query_id)
+            if DEBUG_QUERY:
+                print(query_id)
             for seq_id in query_data[query_id].seq_pairs_dic:
                 seq_instance=query_data[query_id].seq_pairs_dic[seq_id]
                 seq_matches=(seq_instance.num_matches())
@@ -332,7 +344,8 @@ if __name__ == '__main__':
 
             #Grab max matches in the dictionary
             max_matches=max(list(dict_matches.keys()))
-            print('Max num matches amplicon:'+str(max_matches))
+            if DEBUG_QUERY:
+                print('Max num matches amplicon:'+str(max_matches))
 
             #Grab the maximum length queries, and make a table.
             for_table=[]
@@ -344,7 +357,8 @@ if __name__ == '__main__':
             #Sort the table, and return the top matches while printing out all of them.
             sorted_topmatches=top_matches_dataframe.sort_values(by=['LenghtAlig', 'AddedEVal'], ascending=[False, True])
 
-            print(sorted_topmatches['ID_Seq'].head(2))
+            if DEBUG:
+                print(sorted_topmatches['ID_Seq'].head(2))
             sorted_topmatches.to_csv(output_path+output_append_name+'_'+query_id+'_topmatches.tsv', sep='\t', index=False)
 
             #Grab top match

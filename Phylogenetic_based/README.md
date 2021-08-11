@@ -3,6 +3,11 @@
 All of the scripts required to run the tree pipeline are located in the following folder:
 /gsap/garage-protistvector/vector_ampseq/TreeAssignment/TreeAssignment_Pipeline
 
+For the python scripts, activate the corresponding conda enviroment by running:
+```
+conda activate /gsap/garage-protistvector/vector_ampseq/TreeAssignment/TreeAssignment_Pipeline/envs
+```
+
 ### Steps
 
 0. (Optional) Create a metadata file for the task array using the “create_taskarrayinput.py” script:
