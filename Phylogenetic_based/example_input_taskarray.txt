@@ -1,1 +1,0 @@
-Sample_ID Path_FASTA Location_Record_InFASTA
