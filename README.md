@@ -103,12 +103,5 @@ options:
   --reference_database REFERENCE_DATABASE
                         reference BLAST database
 ```
-## Amplicon Reference Database Curation 
-
-## BLAST 
-
-## TREE 
-
-## References 
 
 (c) 2024 Broad Institute 
