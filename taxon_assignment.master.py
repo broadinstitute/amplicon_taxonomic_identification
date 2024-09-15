@@ -2,10 +2,9 @@
 
 ##################################################
 # VecTreeID Pipeline
-# Last Updated: July 24th 2024
+# Last Updated: September 15th 2024
 # Created: September 14th 2022
-# v2 Author: Jason Travis Mohabir
-# v1 Author: Aina Zurita Martinez
+# Authors: Jason Travis Mohabir, Aina Zurita Martinez
 # Neafsey Laboratory
 # Broad Institute (c) 2024
 ##################################################
@@ -295,17 +294,16 @@ def lcr(taxon, taxonomy_dictionary):
         return result
     else: return np.nan
 
-def ncbi_taxonomy(amplicon):
+def ncbi_taxonomy(amplicon, taxonomy_dictionary):
 
         taxa_dict = {'COX1':'diptera',
                      'ITS2':'diptera',
-                     'CytB_vector':'diptera',
                      'CytB_tetrapod':'tetrapods',
                      '16S':'tetrapods',
                      'rbcL':'vascular-plants'}
 
-        path = '/gsap/garage-protistvector/jmohabir/TaxonomyAssignment/newick_convert/ncbi_taxon_lineage.%s.dict.pkl'%(taxa_dict[amplicon])
-
+        # Path to NCBI taxonomy dictionary 
+        path = taxonomy_dictionary     
         with open(path, 'rb') as f: taxonomy_dictionary = pickle.load(f)
 
         return taxonomy_dictionary
@@ -322,7 +320,7 @@ def seqtab_summary_file(seqtab,name,amplicon):
 
     return ret 
 
-def asv_assignment(asvs_seq_dict, failed_blast_asvs , failed_artefact_asvs, failed_species_asvs, passed_species_hits, working_directory, name, amplicon, blast_only, tree_output):
+def asv_assignment(asvs_seq_dict, failed_blast_asvs , failed_artefact_asvs, failed_species_asvs, passed_species_hits, working_directory, name, amplicon, blast_only, tree_output, taxonomy_dictionary_path):
 
     ### Report for quality filters 
 
@@ -342,7 +340,7 @@ def asv_assignment(asvs_seq_dict, failed_blast_asvs , failed_artefact_asvs, fail
 
     #asv_summary_table['BLAST_PossibleHit'] = passed_species_hits.groupby('query id').agg(set)['subject id'].apply(lambda x: { i.split('|')[-1][2:-2] for i in x })
 
-    taxonomy_dictionary = ncbi_taxonomy(amplicon)
+    taxonomy_dictionary = ncbi_taxonomy(amplicon, taxonomy_dictionary_path)
 
     asv_summary_table['BLAST_TopHit_LCR'] = asv_summary_table['BLAST_TopHit'].apply(lambda x: lcr(x, taxonomy_dictionary))
 
@@ -365,7 +363,6 @@ def batch_assignment(blast_tree_assignments, seqtab, max_haplotypes_per_sample, 
     passed_filter = [ i for i in seqtab_normalized.columns if asv_artefact_dict[i] ]
 
     asv_species_dict = dict(zip(blast_tree_assignments.index,blast_tree_assignments.PassedSpeciesAssignmentThreshold))
-
 
     ret = {batch:data[data > min_abundance_assignment].sort_values(ascending=False).rename('percent_reads')[:max_haplotypes_per_sample] for batch, data in seqtab_normalized.iterrows()}
 
@@ -400,10 +397,8 @@ def print_logo():
    \ \/ / _ \/ __| | '__/ _ \/ _ \ | | | |  | |
     \  /  __/ (__| | | |  __/  __/_| |_| |__| |
      \/ \___|\___|_|_|  \___|\___|_____|_____/ 
-                                               
-                                               
-    [Created on π Day 2023]
-    [Authors: Jason Travis Mohabir, Aina Zurita Martinez]
+                                                                                
+    [Authors: Jason Mohabir, Aina Martinez]
     [Created for Neafsey Lab @ Harvard School of Public Health]
     [Maintained by Genomic Center for Infectious Diseases @ Broad Institute of MIT & Harvard]
     """
@@ -436,6 +431,7 @@ if __name__ == '__main__':
     parser.add_argument('--reference_tree',help="reference tree",type=str,default=None)
     parser.add_argument('--reference_msa',help="reference msa",type=str,default=None)
     parser.add_argument('--reference_database',help="reference BLAST database",type=str,default=None)
+    parser.add_argument('--taxonomy_dictionary_path',help="taxonomy dictionary path",type=str,default=None)
     parser.add_argument('--blast_only',help="only run blastn",action='store_true')
     parser.add_argument('--run_blast',help="run blast",action='store_true')
     parser.add_argument('--run_msa',help="run msa",action='store_true')
@@ -453,9 +449,10 @@ if __name__ == '__main__':
     seqtab_path     = "%s/%s_seqtab.tsv"%(dada2_directory,amplicon)
     asv_bimera_path = "%s/ASVBimeras.txt"%(dada2_directory)
 
-    if args.reference_database != None: reference_database = args.reference_database
-    else:  reference_database = "/gsap/garage-protistvector/jmohabir/TaxonomyAssignment/current_databases/blast/%s.final-filt.fasta"%(amplicon)
+    reference_database = args.reference_database
 
+    taxonomy_dictionary_path = args.taxonomy_dictionary_path
+    
     #### Argument Parsing 
 
     min_asv_readcount = args.min_asv_readcount
@@ -516,12 +513,9 @@ if __name__ == '__main__':
 
     ############ Tree Assignment
 
-    if args.reference_tree != None: reference_tree = args.reference_tree
-    else: reference_tree = "/gsap/garage-protistvector/jmohabir/TaxonomyAssignment/FastTree/%s.final-filt.FastTree.nwk"%(amplicon)
+    reference_tree = args.reference_tree
         
-    if args.reference_msa != None: reference_msa = args.reference_msa
-    else: reference_msa  = "/gsap/garage-protistvector/jmohabir/TaxonomyAssignment/current_databases/msa/%s.final-filt.pmsa"%(amplicon)
-
+    reference_msa = args.reference_msa
     if blast_only:
 
         print("!!! Note: Not running Tree assignment for the %s amplicon"%(amplicon))
@@ -559,7 +553,7 @@ if __name__ == '__main__':
     f.write("%s samples had no quality filter passing ASVs: %s\n"%(len(failed_samples),failed_samples))
     f.write("%s ASVs passed quality filters and named as ASV_%s_%s_[1-%s]\n"%(len(asvs),amplicon,name,len(asvs)))
 
-    blast_tree_assignments = asv_assignment( asvs_seq_dict, failed_blast_asvs , failed_artefact_asvs, failed_species_asvs, passed_species_hits, working_directory, name, amplicon, blast_only, tree_output)
+    blast_tree_assignments = asv_assignment( asvs_seq_dict, failed_blast_asvs , failed_artefact_asvs, failed_species_asvs, passed_species_hits, working_directory, name, amplicon, blast_only, tree_output, taxonomy_dictionary_path)
     blast_tree_assignments.to_csv( working_directory + "%s_%s.asv_assignment.results.tsv"%(name,amplicon),sep="\t")
 
     print("Path to ASV-level assignment output: ", working_directory + "%s_%s.asv_assignment.results.tsv"%(name,amplicon))
