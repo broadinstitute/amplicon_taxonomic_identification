@@ -6,7 +6,7 @@
 
 Contact: Jason T. Mohabir (jmohabir@broadinstitute.org)
 
-Private repository for the amplicon taxonomic identification in the Neafsey lab.
+Public repository for the amplicon taxonomic identification in the Neafsey lab.
 
 See the README in each corresponding pipeline for usage.
 
